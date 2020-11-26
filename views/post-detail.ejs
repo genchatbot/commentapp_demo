@@ -1,0 +1,131 @@
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script>
+
+    </script>
+    <style>
+        #right {
+            margin-left: 60%;
+        }
+
+        #left {
+            margin-left: 0%;
+        }
+
+        #center {
+            margin-left: 30%;
+        }
+    </style>
+</head>
+<body>
+        <a href="/logout">Logout</a>
+    <h2>post details page:</h2>
+
+    <h2>Hello <%= user.username %></h2>
+    <p>Title: <%= post.title %></p>
+    <p>Desc: <%= post.description %></p>
+    <span>posted by: <%= post.postedBy.username %></span></br></br>
+
+    </br></br>
+    <textarea id="comment" rows="3" cols="50"></textarea></br>
+    <input type="hidden" id="postId" value="<%= post._id %>">
+    <input type="hidden" id="commentedBy" value="<%= user._id %>">
+    <input type="hidden" id="commentedByUser" name="commentedByUser" value="<%= user.username %>">
+    <input type="submit" value="Comment" id="send">
+    </br>
+    <div class="comments">
+        <%
+            if (typeof post.comments != 'undefined' && post.comments.length > 0) { 
+                post.comments.forEach( function ( commentData ){ %>
+        <div id="left" class="comment">
+            Level 1: <%= commentData.comment %> by : <%= commentData.commentedBy.username %>
+
+            <form class="comment_reply" data-id="" method="post"
+                action="/posts/<%= post._id %>/comments/<%=commentData._id%>/replies">
+                <input type="hidden" id="postId" name="postId" value="<%= post._id %>">
+                <input type="hidden" id="commentId" name="commentId" value="<%= commentData._id %>">
+                <input type="hidden" id="commentedBy" name="commentedBy" value="<%= user._id %>">
+                <input id="replay_comment_cont" class="form-control" rows="3" name="comment" class="post_rep"></input>
+                <button type="submit" class="btn btn-primary" class="post_rep_sub">Reply</button>
+            </form>
+        </div>
+        <%
+            commentData.comments.forEach( function ( reply ){ %>
+        <div id="center">
+            Level 2: <%= reply.comment %> by : <%= reply.commentedBy.username %>
+            <form class="comment_reply" data-id="" method="post"
+                action="/posts/<%= post._id %>/comments/<%=reply._id%>/replies">
+                <input type="hidden" id="postId" name="postId" value="<%= post._id %>">
+                <input type="hidden" id="commentId" name="commentId" value="<%= reply._id %>">
+                <input type="hidden" id="commentedBy" name="commentedBy" value="<%= user._id %>">
+                <input id="replay_comment_cont" class="form-control" rows="3" name="comment" class="post_rep"></input>
+                <button type="submit" class="btn btn-primary" class="post_rep_sub">Reply</button>
+            </form>
+        </div>
+        <% 
+        reply.comments.forEach( function ( subreply ){ %>
+        <div id="right">
+            Level 3: <%= subreply.comment %> by : <%= subreply.commentedBy.username %>
+            <form class="comment_reply" data-id="" method="post"
+                action="/posts/<%= post._id %>/comments/<%=subreply._id%>/replies">
+                <input type="hidden" id="postId" name="postId" value="<%= post._id %>">
+                <input type="hidden" id="commentId" name="commentId" value="<%= subreply._id %>">
+                <input type="hidden" id="commentedBy" name="commentedBy" value="<%= user._id %>">
+                <input id="replay_comment_cont" class="form-control" rows="3" name="comment" class="post_rep"></input>
+                <button type="submit" class="btn btn-primary" class="post_rep_sub">Reply</button>
+            </form>
+        </div>
+
+        <% }) %>
+
+        <% }) %>
+
+        <% }) %>
+
+        <%
+        }
+        else {   %>
+       
+        <% } 
+        %>
+
+    </div>
+
+</body>
+<script type="text/javascript">
+    var socket = io();
+    $('#send').click(function () {
+        var comment = $('#comment').val();
+        var postId = $('#postId').val();
+        var commentedBy = $('#commentedBy').val();
+        var commentedByUser=$('#commentedByUser').val();
+  
+        if (comment != '') {
+            var data = { 
+                'comment': comment, 
+                'postId': postId, 
+                'commentedBy': commentedBy,'commentedByUser': commentedByUser 
+            };
+            $('.comments').prepend("Level 1: "+data.comment+" by : "+data.commentedByUser);
+            $('#comment').val('');
+        }
+        socket.emit('comment', data);
+    });
+
+    socket.on('comment', function (data) {
+        console.log("sock com data::"+data)
+        var postId = "<%= post._id %>";
+        if (postId == data.postId) {
+            $('.comments').prepend("Level 1: "+data.comment+" by : "+data.commentedByUser);
+        }
+    });
+
+</script>
+
+</html>

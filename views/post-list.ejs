@@ -1,0 +1,27 @@
+
+<a href="/logout">Logout</a>
+
+
+        <h2>Hello <%= user.username %></h2>
+
+        <h2>Below are the posts:</h2>
+<table border="1">
+    <% 
+    if (typeof posts != 'undefined' && posts.length > 0) { 
+            var srNo = 0;
+            posts.forEach( function ( post ){
+                    srNo = srNo + 1;
+                    %>
+<tr>
+<td><%= srNo %></td>
+<td><%= post.title %></td>
+<td><a href="/posts/<%= post._id %>" title="Post Detail">Details</a></td>
+
+</tr>
+<% });
+}
+else {  %>
+<tr><td colspan="3"> No Data </td></tr>
+<% } %>
+
+</table>
